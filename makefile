@@ -10,7 +10,11 @@ UPLOAD_FLAGS=upload -v -b arduino:avr:uno --port /dev/ttyACM0 --input-dir $(OUTP
 
 .PHONY=all
 
-all:
+all: compile
+
+build: compile upload
+
+compile:
 	$(CC) $(COMPILE_FALGS)
 
 upload:
