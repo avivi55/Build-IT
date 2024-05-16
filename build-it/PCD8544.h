@@ -50,6 +50,16 @@
 #define WIDTH 84
 #define HEIGHT 48
 
+#define BUF_W 11 // 84/8 + 1
+#define BUF_H HEIGHT
+#define BUF_SIZE 528 // 48*11
+
+#define bitsToByte(b1, b2, b3, b4, b5, b6, b7, b8) \
+(b8 << 7) | (b7 << 6) | (b6 << 5) | (b5 << 4) | (b4 << 3) | (b3 << 2) | (b2 << 1) | b1
+
+#define MIN(a,b) (((a)<(b))?(a):(b))
+#define MAX(a,b) (((a)>(b))?(a):(b))
+
 class PCD8544
 {
 public:
@@ -68,7 +78,8 @@ public:
   void clearColumn();
   void zeroRAM();
 
-  void drawPixel(uint8_t x, uint8_t y);
+  bool getPixel(uint8_t x, uint8_t y);
+  void setPixel(uint8_t x, uint8_t y, bool data);
 
   void drawVerticalLine(uint8_t x, uint8_t y0, uint8_t y1);
   void drawHorizontalLine(uint8_t y, uint8_t x0, uint8_t x1);
@@ -79,7 +90,6 @@ public:
   void drawFromBuffer();
 
   void setCursor(uint8_t x, uint8_t y);
-  // virtual size_t write(uint8_t chr) = 0;
 
 private:
   uint8_t pin_sclk;
@@ -88,8 +98,8 @@ private:
   uint8_t pin_reset;
   uint8_t pin_sce;
   uint8_t *pixelsBuffer;
-   uint8_t cursorX;
-   uint8_t cursorY;
+  uint8_t cursorX;
+  uint8_t cursorY;
 };
 
 // const PROGMEM char charlist[55] = {

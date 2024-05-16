@@ -1,5 +1,5 @@
 #include "PCD8544.h"
-#define GET_BIT(p, n) ((((unsigned char *)p)[n/8] >> (n%8)) & 0x01)
+
 PCD8544::PCD8544(uint8_t sclk, uint8_t sdin, uint8_t dc, uint8_t reset, uint8_t sce):
   pin_sclk(sclk),
   pin_sdin(sdin),
@@ -7,7 +7,8 @@ PCD8544::PCD8544(uint8_t sclk, uint8_t sdin, uint8_t dc, uint8_t reset, uint8_t 
   pin_reset(reset),
   pin_sce(sce)
 {
-  pixelsBuffer = (uint8_t*)calloc((WIDTH * HEIGHT)/8, 1);
+  pixelsBuffer = (uint8_t*)calloc(BUF_SIZE, 1);
+
   cursorX = 0;
   cursorY = 0;
 }
@@ -99,26 +100,66 @@ void PCD8544::zeroRAM()
 void PCD8544::clearLine();
 void PCD8544::clearColumn();
 
-void PCD8544::drawPixel(uint8_t x, uint8_t y)
+bool PCD8544::getPixel(uint8_t x, uint8_t y)
 {
-  setCursor(x, (uint8_t)(y/8));
-  sendData(1 << (y%8));
+  x %= 84;
+  y %= 48;
+
+  return (bool) (pixelsBuffer[(y * 11) + x/8] & (0b10000000 >> (x%8)));
+}
+
+void PCD8544::setPixel(uint8_t x, uint8_t y, bool state)
+{
+  x %= 84;
+  y %= 48;
+
+  uint8_t maskNoConcernedBit = ~(0b10000000 >> (x%8));
+
+  pixelsBuffer[(y * BUF_W) + x/8] = (uint8_t) ((pixelsBuffer[(y * BUF_W) + x/8] & maskNoConcernedBit) | ((state << 7) >> (x%8)));
 }
 
 void PCD8544::drawFromBuffer()
 {
-  for (int y = 0; y < (HEIGHT * WIDTH) / 8; ++y) {
-    for (uint8_t i = 0; i < 8; i++) {
-      Serial.print(pixelsBuffer[y] & (1<<i));
+  for (uint8_t y = 0; y < 6; y++) {
+    for (uint8_t x = 0; x < WIDTH; ++x) {
+      setCursor(x, y);
+      sendData(bitsToByte(
+        getPixel(x, (y*8)),
+        getPixel(x, (y*8) + 1),
+        getPixel(x, (y*8) + 2),
+        getPixel(x, (y*8) + 3),
+        getPixel(x, (y*8) + 4),
+        getPixel(x, (y*8) + 5),
+        getPixel(x, (y*8) + 6),
+        getPixel(x, (y*8) + 7)
+      ));
     }
-    Serial.println();
   }
 }
 
-void PCD8544::drawVerticalLine(uint8_t x, uint8_t y0, uint8_t y1);
-void PCD8544::drawHorizontalLine(uint8_t y, uint8_t x0, uint8_t x1);
+void PCD8544::drawVerticalLine(uint8_t x, uint8_t y0, uint8_t y1)
+{
+  for (uint8_t i = MIN(y0, y1); i <= MAX(y0, y1); i++)
+  {
+    setPixel(x, i, 1);
+  }
+}
 
-void PCD8544::drawRectangle(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1);
+void PCD8544::drawHorizontalLine(uint8_t y, uint8_t x0, uint8_t x1)
+{
+  for (uint8_t i = MIN(x0, x1); i <= MAX(x0, x1); i++)
+  {
+    setPixel(i, y, 1);
+  }
+}
+
+void PCD8544::drawRectangle(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1){
+  drawVerticalLine(x0, y0, y1);
+  drawVerticalLine(x1, y0, y1);
+
+  drawHorizontalLine(y0, x0, x1);
+  drawHorizontalLine(y1, x0, x1);
+}
 void PCD8544::drawFilledRectangle(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1);
 void PCD8544::drawBitmap(const uint8_t *map, uint8_t nColumns, uint8_t nLines);
 
@@ -130,4 +171,3 @@ void PCD8544::setCursor(uint8_t x, uint8_t y)
   sendCommand(CMD_SET_X | cursorX);
   sendCommand(CMD_SET_Y | cursorY);
 }
-// size_t PCD8544::write(uint8_t chr);
