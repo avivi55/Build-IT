@@ -1,4 +1,4 @@
-# C-Games
-A collection of games for my yearly project.
+# BuildIT
+A learning platform for soldering based on a PCB console.
 
-The point here is to make a modular base to accommodate any embedded board.
+Here you can find the software to flash on the Atmega 328P in the PCB.

@@ -73,7 +73,7 @@ public:
   void setPower(bool on);
   // void setVop(uint8_t level);
 
-  void clearScreen();
+  void resetBuffer();
   void clearLine();
   void clearColumn();
   void zeroRAM();
@@ -81,11 +81,11 @@ public:
   bool getPixel(uint8_t x, uint8_t y);
   void setPixel(uint8_t x, uint8_t y, bool data);
 
-  void drawVerticalLine(uint8_t x, uint8_t y0, uint8_t y1);
-  void drawHorizontalLine(uint8_t y, uint8_t x0, uint8_t x1);
+  void drawVerticalLine(uint8_t x, uint8_t y0, uint8_t y1, bool color);
+  void drawHorizontalLine(uint8_t y, uint8_t x0, uint8_t x1, bool color);
 
-  void drawRectangle(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1);
-  void drawFilledRectangle(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1);
+  void drawRectangle(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, bool color);
+  void drawFilledRectangle(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, bool color);
   void drawBitmap(const uint8_t *map, uint8_t nColumns, uint8_t nLines);
   void drawFromBuffer();
 

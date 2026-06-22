@@ -97,6 +97,11 @@ void PCD8544::zeroRAM()
   setCursor(0, 0);
 }
 
+void PCD8544::resetBuffer(){
+  free(pixelsBuffer);
+  pixelsBuffer = (uint8_t*)calloc(BUF_SIZE, 1);
+}
+
 void PCD8544::clearLine();
 void PCD8544::clearColumn();
 
@@ -137,30 +142,41 @@ void PCD8544::drawFromBuffer()
   }
 }
 
-void PCD8544::drawVerticalLine(uint8_t x, uint8_t y0, uint8_t y1)
+void PCD8544::drawVerticalLine(uint8_t x, uint8_t y0, uint8_t y1, bool color)
 {
-  for (uint8_t i = MIN(y0, y1); i <= MAX(y0, y1); i++)
+  for (uint8_t y = MIN(y0, y1); y <= MAX(y0, y1); y++)
   {
-    setPixel(x, i, 1);
+    setPixel(x, y, color);
   }
 }
 
-void PCD8544::drawHorizontalLine(uint8_t y, uint8_t x0, uint8_t x1)
+void PCD8544::drawHorizontalLine(uint8_t y, uint8_t x0, uint8_t x1, bool color)
 {
-  for (uint8_t i = MIN(x0, x1); i <= MAX(x0, x1); i++)
+  for (uint8_t x = MIN(x0, x1); x <= MAX(x0, x1); x++)
   {
-    setPixel(i, y, 1);
+    setPixel(x, y, color);
   }
 }
 
-void PCD8544::drawRectangle(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1){
-  drawVerticalLine(x0, y0, y1);
-  drawVerticalLine(x1, y0, y1);
+void PCD8544::drawRectangle(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, bool color)
+{
+  drawVerticalLine(x0, y0, y1, color);
+  drawVerticalLine(x1, y0, y1, color);
 
-  drawHorizontalLine(y0, x0, x1);
-  drawHorizontalLine(y1, x0, x1);
+  drawHorizontalLine(y0, x0, x1, color);
+  drawHorizontalLine(y1, x0, x1, color);
 }
-void PCD8544::drawFilledRectangle(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1);
+
+
+void PCD8544::drawFilledRectangle(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, bool color)
+{
+  for (uint8_t x = MIN(x0, x1); x <= MAX(x0, x1); x++)
+  {
+    drawVerticalLine(x, y0, y1, color);
+  }
+}
+
+
 void PCD8544::drawBitmap(const uint8_t *map, uint8_t nColumns, uint8_t nLines);
 
 void PCD8544::setCursor(uint8_t x, uint8_t y)
